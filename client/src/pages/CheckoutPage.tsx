@@ -10,7 +10,7 @@ export function CheckoutPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [processing, setProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "wallet">("card");
+  const [paymentMethod, setPaymentMethod] = useState<"wallet" | "cod">("cod");
   const [wallet, setWallet] = useState<Wallet | null>(null);
 
   useEffect(() => {
@@ -79,11 +79,11 @@ export function CheckoutPage() {
           <p className="mb-2 text-sm font-medium text-slate-700">Payment Method</p>
           <div className="flex gap-3">
             <button
-              className={`rounded-lg border px-3 py-1.5 text-sm ${paymentMethod === "card" ? "border-slate-900 bg-slate-900 text-white" : ""}`}
-              onClick={() => setPaymentMethod("card")}
+              className={`rounded-lg border px-3 py-1.5 text-sm ${paymentMethod === "cod" ? "border-slate-900 bg-slate-900 text-white" : ""}`}
+              onClick={() => setPaymentMethod("cod")}
               type="button"
             >
-              Card
+              Cash on Delivery
             </button>
             <button
               className={`rounded-lg border px-3 py-1.5 text-sm ${paymentMethod === "wallet" ? "border-slate-900 bg-slate-900 text-white" : ""}`}
@@ -120,7 +120,7 @@ export function CheckoutPage() {
             }
           }}
         >
-          {processing ? "Processing..." : paymentMethod === "wallet" ? "Pay with wallet" : "Review your order"}
+          {processing ? "Processing..." : paymentMethod === "wallet" ? "Pay with wallet" : "Place COD order"}
         </button>
         {message && <p className="text-emerald-600">{message}</p>}
         {error && <p className="text-rose-600">{error}</p>}

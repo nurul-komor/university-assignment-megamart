@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { http } from "../api/http";
 import type { TrackingStep } from "../types";
 
@@ -13,6 +14,7 @@ interface TrackingResponse {
 }
 
 export function TrackOrderPage() {
+  const [searchParams] = useSearchParams();
   const [orderId, setOrderId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,6 +37,26 @@ export function TrackOrderPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    const orderIdFromQuery = searchParams.get("orderId")?.trim() || "";
+    if (!orderIdFromQuery) return;
+
+    setOrderId(orderIdFromQuery);
+    void (async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const { data } = await http.get<TrackingResponse>(`/orders/${orderIdFromQuery}/tracking`);
+        setResult(data);
+      } catch {
+        setResult(null);
+        setError("Order not found or you do not have permission.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [searchParams]);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">

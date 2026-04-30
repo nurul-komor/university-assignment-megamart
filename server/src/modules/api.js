@@ -274,7 +274,7 @@ router.delete("/cart", requireAuth, async (req, res) => {
 router.post("/orders/checkout", requireAuth, async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
-    const body = z.object({ paymentMethod: z.enum(["card", "wallet"]).default("card") }).parse(req.body);
+    const body = z.object({ paymentMethod: z.enum(["card", "wallet", "cod"]).default("cod") }).parse(req.body);
     let createdOrder;
 
     await session.withTransaction(async () => {

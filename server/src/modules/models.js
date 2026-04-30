@@ -100,7 +100,7 @@ const orderSchema = new mongoose.Schema(
       },
     ],
     totalAmount: { type: Number, required: true },
-    paymentMethod: { type: String, enum: ["card", "wallet"], default: "card" },
+    paymentMethod: { type: String, enum: ["card", "wallet", "cod"], default: "cod" },
     walletDebitTransactionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "WalletTransaction",

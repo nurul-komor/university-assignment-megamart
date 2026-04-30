@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { http } from "../api/http";
 import type { Order } from "../types";
 
@@ -48,6 +49,14 @@ export function CustomerOrdersPage() {
               ))}
             </div>
             <div className="mt-4 border-t pt-3 text-right font-semibold">Total: ${order.totalAmount.toFixed(2)}</div>
+            <div className="mt-3 flex justify-end">
+              <Link
+                to={`/track-order?orderId=${encodeURIComponent(order._id)}`}
+                className="rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+              >
+                Track Order
+              </Link>
+            </div>
           </article>
         ))}
       </div>
