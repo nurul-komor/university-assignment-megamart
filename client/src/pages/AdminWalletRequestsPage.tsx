@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { http } from "../api/http";
 import type { WalletRequest } from "../types";
 
@@ -29,7 +30,15 @@ export function AdminWalletRequestsPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold">Wallet Approvals</h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-3xl font-bold">Wallet Approvals</h1>
+        <Link
+          to="/admin/orders"
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Go to Order Management
+        </Link>
+      </div>
 
       <div className="mb-4 flex gap-2">
         {(["pending", "approved", "rejected"] as RequestStatusFilter[]).map((status) => (

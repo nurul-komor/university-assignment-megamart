@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { http } from "../api/http";
-import type { Order, WalletRequest } from "../types";
+import type { Order } from "../types";
+
+const ORDER_STATUSES = [
+  "confirmed",
+  "packed",
+  "shipped",
+  "out_for_delivery",
+  "delivered",
+  "cancelled",
+] as const;
+
+function formatOrderStatus(status: string) {
+  return status.split("_").join(" ");
+}
 
 function getCustomer(order: Order) {
   if (typeof order.userId === "string") return { name: "Unknown", email: "N/A" };
@@ -9,19 +23,24 @@ function getCustomer(order: Order) {
 
 export function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [walletRequests, setWalletRequests] = useState<WalletRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [statusDrafts, setStatusDrafts] = useState<Record<string, string>>({});
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [updateError, setUpdateError] = useState("");
 
   async function loadAll() {
     setLoading(true);
     try {
-      const [ordersRes, walletRequestsRes] = await Promise.all([
-        http.get<{ orders: Order[] }>("/admin/orders"),
-        http.get<{ requests: WalletRequest[] }>("/admin/wallet/requests?status=pending"),
-      ]);
-      setOrders(ordersRes.data.orders || []);
-      setWalletRequests(walletRequestsRes.data.requests || []);
+      const ordersRes = await http.get<{ orders: Order[] }>("/admin/orders");
+      const nextOrders = ordersRes.data.orders || [];
+      setOrders(nextOrders);
+      setStatusDrafts(
+        nextOrders.reduce<Record<string, string>>((acc, order) => {
+          acc[order._id] = order.status;
+          return acc;
+        }, {})
+      );
       setError("");
     } catch {
       setError("Unable to load admin orders.");
@@ -36,50 +55,17 @@ export function AdminOrdersPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold">Admin Orders</h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-3xl font-bold">Admin Orders</h1>
+        <Link
+          to="/admin/wallet-requests"
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Go to Wallet Approvals
+        </Link>
+      </div>
       {loading && <p className="text-slate-500">Loading orders...</p>}
       {error && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
-      <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-xl font-semibold">Pending Wallet Requests</h2>
-        {!walletRequests.length && <p className="text-sm text-slate-500">No pending wallet requests.</p>}
-        <div className="space-y-3">
-          {walletRequests.map((request) => {
-            const customer = typeof request.userId === "string" ? { name: "Unknown", email: "" } : request.userId;
-            return (
-              <div key={request._id} className="rounded-lg border p-3">
-                <p className="font-medium">
-                  {customer.name} ({customer.email})
-                </p>
-                <p className="text-sm text-slate-600">
-                  {request.type} - ${request.amount.toFixed(2)}
-                </p>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    className="rounded-lg bg-emerald-600 px-3 py-1 text-sm font-medium text-white"
-                    type="button"
-                    onClick={async () => {
-                      await http.patch(`/admin/wallet/requests/${request._id}`, { action: "approve" });
-                      await loadAll();
-                    }}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    className="rounded-lg bg-rose-600 px-3 py-1 text-sm font-medium text-white"
-                    type="button"
-                    onClick={async () => {
-                      await http.patch(`/admin/wallet/requests/${request._id}`, { action: "reject" });
-                      await loadAll();
-                    }}
-                  >
-                    Reject
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
       {!loading && !orders.length && (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
           No orders found.
@@ -98,7 +84,7 @@ export function AdminOrdersPage() {
                   </p>
                 </div>
                 <p className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase text-emerald-700">
-                  {order.status}
+                  {formatOrderStatus(order.status)}
                 </p>
               </div>
               <div className="space-y-2">
@@ -112,9 +98,53 @@ export function AdminOrdersPage() {
                 ))}
               </div>
               <div className="mt-4 border-t pt-3 text-right font-semibold">Total: ${order.totalAmount.toFixed(2)}</div>
-              <div className="mt-3 flex justify-end">
+              <div className="mt-3 flex flex-col gap-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                  <label className="text-sm font-medium text-slate-700" htmlFor={`order-status-${order._id}`}>
+                    Update status
+                  </label>
+                  <select
+                    id={`order-status-${order._id}`}
+                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    value={statusDrafts[order._id] ?? order.status}
+                    disabled={updatingOrderId === order._id}
+                    onChange={(event) => {
+                      setStatusDrafts((prev) => ({ ...prev, [order._id]: event.target.value }));
+                    }}
+                  >
+                    {ORDER_STATUSES.map((status) => (
+                      <option key={status} value={status}>
+                        {formatOrderStatus(status)}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white disabled:bg-slate-400"
+                    type="button"
+                    disabled={
+                      updatingOrderId === order._id || (statusDrafts[order._id] ?? order.status) === order.status
+                    }
+                    onClick={async () => {
+                      try {
+                        setUpdatingOrderId(order._id);
+                        setUpdateError("");
+                        await http.patch(`/admin/orders/${order._id}/status`, {
+                          status: statusDrafts[order._id] ?? order.status,
+                        });
+                        await loadAll();
+                      } catch {
+                        setUpdateError("Failed to update order status. Please try again.");
+                      } finally {
+                        setUpdatingOrderId(null);
+                      }
+                    }}
+                  >
+                    {updatingOrderId === order._id ? "Updating..." : "Save Status"}
+                  </button>
+                </div>
+                {updateError && <p className="text-right text-sm text-rose-600">{updateError}</p>}
                 <button
-                  className="rounded-lg border border-rose-300 px-3 py-1 text-sm text-rose-700 disabled:opacity-50"
+                  className="ml-auto rounded-lg border border-rose-300 px-3 py-1 text-sm text-rose-700 disabled:opacity-50"
                   type="button"
                   disabled={order.status === "cancelled"}
                   onClick={async () => {
