@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const { env } = require("./config/env");
 const { apiRouter } = require("./modules/api");
 const { errorHandler, notFoundHandler } = require("./shared/middlewares");
 
@@ -9,7 +8,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: env.clientOrigin,
+    origin: true,
     credentials: true,
   })
 );
