@@ -1,4 +1,4 @@
-# MegaMart MERN Migration
+# Mega Mart MERN Migration
 
 This project has been migrated from static HTML/CSS/JS into a full MERN stack:
 

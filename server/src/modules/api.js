@@ -17,10 +17,12 @@ function signToken(user) {
 }
 
 function setAuthCookie(res, token) {
+  const isSecureOrigin = String(env.clientOrigin || "").startsWith("https://");
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: env.cookieSecure,
+    // Cross-site auth between different Vercel domains needs SameSite=None + Secure.
+    sameSite: isSecureOrigin ? "none" : "lax",
+    secure: isSecureOrigin || env.cookieSecure,
     maxAge: 24 * 60 * 60 * 1000,
   });
 }

@@ -56,7 +56,7 @@ export function Header() {
       <header className="sticky top-0 z-40 border-b bg-white shadow-sm">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4">
           <Link to="/" className="text-2xl font-bold text-emerald-600">
-            BazaarMart
+            Mega Mart
           </Link>
           <form
             className="flex-1 min-w-[220px]"

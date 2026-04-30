@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="mt-12 border-t border-slate-200 bg-[#0f172a] text-slate-200">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-4">
         <div>
-          <h3 className="text-xl font-bold text-emerald-400">BazaarMart</h3>
+          <h3 className="text-xl font-bold text-emerald-400">Mega Mart</h3>
           <p className="mt-3 text-sm text-slate-300">
             Your modern grocery and essentials marketplace with fast delivery and quality products.
           </p>
@@ -39,7 +39,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-slate-700 py-4 text-center text-sm text-slate-400">
-        Copyright {new Date().getFullYear()} MegaMart. All rights reserved.
+        Copyright {new Date().getFullYear()} Mega Mart. All rights reserved.
       </div>
     </footer>
   );

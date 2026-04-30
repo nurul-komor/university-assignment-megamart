@@ -34,7 +34,7 @@ function createDummyProducts() {
     const price = Number((2.5 + (i % 10) * 1.35 + i * 0.15).toFixed(2));
     items.push({
       title: `${category.charAt(0).toUpperCase() + category.slice(1)} Item ${i + 1}`,
-      description: `Fresh ${category} product number ${i + 1} from MegaMart seed data.`,
+      description: `Fresh ${category} product number ${i + 1} from Mega Mart seed data.`,
       price,
       category,
       stock: 15 + (i % 12) * 4,

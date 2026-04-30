@@ -1,1 +1,1 @@
-# university-assignment-megamart
+# university-assignment-mega-mart
