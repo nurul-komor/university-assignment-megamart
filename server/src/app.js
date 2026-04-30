@@ -3,7 +3,6 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const { connectDatabase } = require("./config/database");
-const { env } = require("./config/env");
 const { apiRouter } = require("./modules/api");
 const { errorHandler, notFoundHandler } = require("./shared/middlewares");
 
@@ -41,21 +40,9 @@ function resolveDisconnectReason(error, state) {
   return "mongodb_ping_failed";
 }
 
-const allowedOrigins = String(env.clientOrigin || "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
-
 app.use(
   cors({
-    origin(origin, callback) {
-      // Allow non-browser tools (no Origin header), and configured frontend origins.
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(new Error("Not allowed by CORS"));
-    },
+    origin: true,
     credentials: true,
   })
 );
